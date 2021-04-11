@@ -1,0 +1,3 @@
+﻿  demo_console.cpp
+D:\191220083\Profess\ProgramingCpp\PVZ\PVZ\demo_console.cpp(19,11): warning C4101: “mode”: 未引用的局部变量
+  PVZ.vcxproj -> D:\191220083\Profess\ProgramingCpp\PVZ\Debug\PVZ.exe
