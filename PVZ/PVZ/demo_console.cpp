@@ -4,7 +4,6 @@
 #include "GardenBoard.h"
 #include <iostream>
 #include <algorithm>
-
 using namespace std;
 extern bool GAME_FAIL;
 extern const int Y_MAX;
