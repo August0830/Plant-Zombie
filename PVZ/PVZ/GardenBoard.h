@@ -3,8 +3,9 @@
 #include <vector>
 #include <stdlib.h>
 #include <Windows.h>
+#include <map>
 #define WH_KEYBOARD_LL 13
-
+const int unit_max = 6;//一个格子能够容纳的最多的最大数量
 //#include "Zombie.h"
 //#include "Plant.h"
 const int X_INTERVAL = 15;
@@ -13,6 +14,11 @@ extern int shooter_attack_val;
 extern int shooter_life_val;
 extern int shooter_sun_price_val;
 extern int bullet_fly_speed;
+extern int double_shooter_sun_price_val;
+extern int turn;
+extern int defense_life_val;
+extern int defense_sun_price_val;
+extern int bomb_sun_price_val;
 using namespace std;
 class Zombie;
 class Plant;
@@ -38,13 +44,16 @@ public:
 	HANDLE hOutput;
 	HANDLE hIn;
 	vector<vector<void*>> garden_pos;
-	GardenBoard(int row_total, int col_total,HANDLE hIn,HANDLE hOutput) :point_cnt(0), sun_deposit(100),zombie_max(4),
+	vector<vector<int>> garden_pos_cnt;
+	GardenBoard(int row_total, int col_total,HANDLE hIn,HANDLE hOutput) :point_cnt(0), sun_deposit(50),zombie_max(4),
 		sunflower_cnt(0)
 	{
 		for (int i = 0; i < row_total; ++i)
 		{
 			vector<void*> tmp(col_total);
 			garden_pos.push_back(tmp);
+			vector<int> ini(col_total, 0);
+			garden_pos_cnt.push_back(ini);
 		}//此处填满了NULL指针
 		zombie_cnt.resize(row_total, 0);
 		this->row_total = row_total;
@@ -75,7 +84,9 @@ public:
 	int sun_price;//购买所需阳光数
 	char type;//供花园区分植物和僵尸
 	string plant_name;//细分不同的植物类别
-	Plant() :row(0), col(0), life(30), sun_price(0), type('p'), plant_name("plant") {};
+	string func_type;
+	//功能类型，包括射手类(Shooter)，炸弹类(Bomb) 防御类(Defense) 效果型(Efficient)等
+	Plant() :row(0), col(0), life(30), sun_price(0), type('p'), plant_name("plant"),func_type("plant") {};
 	int get_col()const { return col; }//供外界调试时获取列坐标
 	void get_hurt(Zombie* zombie);//被僵尸攻击
 	int price()const { return sun_price; }//供外界调试时获取购买植物所需阳光数
@@ -86,6 +97,7 @@ class Sunflower :public Plant
 public:
 	Sunflower(int r, int c) {
 		row = r; col = c; plant_name = "Sunflower";
+		func_type = "Efficient";
 		sun_price = 10;
 		life = 20;
 	}
@@ -95,10 +107,12 @@ class Shooter :public Plant//
 {
 	friend class GardenBoard;
 	friend class Bullet;
+	friend class Frozen_Bullet;
 private:
 	int attack;
 	vector<Bullet*> bullet_set;//暂时public 之后给garden调用
 public:
+	Shooter():attack(shooter_attack_val){};
 	Shooter(int r, int c) :attack(shooter_attack_val)
 	{
 		row = r;
@@ -106,11 +120,32 @@ public:
 		life = shooter_life_val;
 		sun_price = shooter_sun_price_val;
 		plant_name = "Shooter";
+		func_type = "Shooter";
 		bullet_set.clear();
 	}
 	void attacking();//通过产生子弹来攻击
 	int get_row()const { return row; }
 	int get_col()const { return col; }	
+};
+class Double_Shooter :public Shooter
+{
+	friend class GardenBoard;
+	friend class Bullet;
+private:
+	int attack;
+	vector<Bullet*> bullet_set;
+public:
+	Double_Shooter(int r, int c) :attack(shooter_attack_val)
+	{
+		row = r;
+		col = c;
+		life = shooter_life_val;
+		sun_price = double_shooter_sun_price_val;
+		plant_name = "Double Shooter";
+		func_type = "Shooter";
+		bullet_set.clear();
+	}
+	void attacking();
 };
 class Bullet
 {
@@ -131,18 +166,105 @@ public:
 		fly_speed= fly;
 	}
 	void move(vector<vector<void*>>& garden_pos);//子弹自己更新位置
-	void print_bullet(HANDLE hOutput);//子弹自行打印位置
-	void attacking(Zombie* zombie);//子弹攻击僵尸
+	void print_bullet(HANDLE hOutput, int duplicated);//子弹自行打印位置
+	virtual void attacking(Zombie* zombie);//子弹攻击僵尸
 	int get_col()const { return col; }//供外界调用
+};
+class Frozen_Shooter:public Shooter
+{
+	friend class GardenBoard;
+	friend class Bullet;
+private:
+	int attack;
+	vector<Bullet*> bullet_set;
+public:
+	Frozen_Shooter(int r, int c) :attack(shooter_attack_val)
+	{
+		row = r;
+		col = c;
+		life = shooter_life_val;
+		sun_price = double_shooter_sun_price_val;
+		plant_name = "Frozen Shooter";
+		func_type = "Shooter";
+		bullet_set.clear();
+	}
+};
+class Nut :public Plant
+{
+	friend class GardenBoard;
+	friend class Bullet;
+	friend class Frozen_Bullet;
+public:
+	Nut() {};
+	Nut(int r, int c)
+	{
+		row = r;
+		col = c;
+		life = shooter_life_val;
+		sun_price = defense_sun_price_val;
+		plant_name = "Nut";
+		func_type = "Defense";
+	}
+};
+class High_Nut :public Nut
+{
+	friend class GardenBoard;
+	friend class Bullet;
+	friend class Frozen_Bullet;
+public:
+	High_Nut(int r, int c)
+	{
+		row = r;
+		col = c;
+		life = shooter_life_val*2;
+		sun_price = defense_sun_price_val+10;
+		plant_name = "High Nut";
+		func_type = "Defense";
+	}
+};
+
+class Squash :public Plant
+{
+	friend class GardenBoard;
+public:
+	Squash()  {};
+	Squash(int r, int c)
+	{
+		row = r;
+		col = c;
+		life = shooter_life_val;
+		sun_price = shooter_sun_price_val;
+		plant_name = "Squash";
+		func_type = "Bomb";
+	}
+	void attacking(vector<vector<void*>>& garden_pos);
+};
+
+class Cherry_Bomb :public Plant
+{
+	friend class GardenBoard;
+public:
+	Cherry_Bomb() {};
+	Cherry_Bomb(int r, int c)
+	{
+		row = r;
+		col = c;
+		life = shooter_life_val;
+		sun_price = bomb_sun_price_val + 10;
+		plant_name = "Cherry Bomb";
+		func_type = "Bomb";
+	}
+	void attacking(vector<vector<void*>>& garden_pos);
 };
 
 class Zombie
 {
 	friend class GardenBoard;
+	friend class Frozen_Bullet;
 private:
 	int life;//生命值
 	int attack;//攻击力
-	int speed;//移动速度 同样是一回合移动的格数
+	int speed;//移动速度 改为多少回合移动一格
 	//有多种僵尸之后再命名
 
 public:
@@ -158,11 +280,12 @@ public:
 		life = _life; attack = _att; speed = _speed; row = r; col = c;
 	}
 	void get_hurted(int attack_value);//便于之后增加其他带有攻击性的植物 所以只传入攻击值
-	bool move(vector<vector<void*>>& garden_pos, int x0, int y0);//自行移动
+	bool move(vector<vector<int>>& garden_pos_cnt, int x0, int y0);//自行移动
 	int attacking()const
 	{
 		return attack;
 	}//获取攻击值
 	int get_row()const { return row; }
 	int get_col()const { return col; }//获取位置
+	void reset_speed(int new_val) { speed = new_val; }
 };

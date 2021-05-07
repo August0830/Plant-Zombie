@@ -7,6 +7,7 @@
 using namespace std;
 bool GAME_FAIL = false;//设置全局变量是便于通信，及时结束切换输出
 extern const int Y_MAX;
+int turn = 0;
 void GardenBoard::generate_sun()
 {
     sun_deposit += 10+10*sunflower_cnt;
@@ -55,38 +56,58 @@ void GardenBoard::print_garden()
             cout << "#";
         }
     }//每个格子的中心位置 选择时把位置设置成中心位置 读取每一行pos中的格子数自动转换成指定位置*/
-    
+    map<pair<int, int>, int> adjust_pos;
     for (int i = 0; i < row_total; ++i)
     {
-        tst.Y = 3 + 7 * i;
+        //tst.Y = 3 + 7 * i;
+        //tst.Y = 1+7 * i;
         for (auto plant : garden_pos[i])
         {
             if (!plant || ((Plant*)plant)->type != 'p') continue;
-            tst.X = 7 + 15 * ((Plant*)plant)->col;
+            if (adjust_pos.count(make_pair(i, ((Plant*)plant)->col)) == 0)
+                adjust_pos[make_pair(i, ((Plant*)plant)->col)] = 1;
+            else
+                adjust_pos[make_pair(i, ((Plant*)plant)->col)]++;
+            tst.X = 4 + 15 * ((Plant*)plant)->col;
             //tst.Y++;
+            tst.Y = 7 * i + adjust_pos[make_pair(i, ((Plant*)plant)->col)];
             SetConsoleCursorPosition(hOutput, tst);
-            cout << ((Plant*)plant)->plant_name;
+            cout << ((Plant*)plant)->plant_name<<" "<< ((Plant*)plant)->life;
         }
         for (auto zombie : garden_pos[i])
         {
             if (!zombie || ((Zombie*)zombie)->type != 'z') continue;
+            if (adjust_pos.count(make_pair(i, (((Zombie*)zombie)->col) == 0)))
+                adjust_pos[make_pair(i, ((Zombie*)zombie)->col)] = 1;
+            else
+                adjust_pos[make_pair(i, ((Zombie*)zombie)->col)]++;
             tst.X = 7 + 15 * ((Zombie*)zombie)->col;
+            tst.Y = 7 * i + adjust_pos[make_pair(i, ((Zombie*)zombie)->col)];
             //tst.Y--;
             SetConsoleCursorPosition(hOutput, tst);
-            cout << "Zombie";// << " " << ((Zombie*)zombie)->col << " " << ((Zombie*)zombie)->life;
+            cout << "Zombie "<<((Zombie*)zombie)->life;// << " " << ((Zombie*)zombie)->col << " " << ;
         }
     }
 
     tst.X = 0; tst.Y = 22;
     SetConsoleCursorPosition(hOutput, tst);
-    cout << "Total Points: " << point_cnt;
+    cout << "Total Points: " << point_cnt<< " Turn: "<<turn;
     tst.X = 0; tst.Y = 23;
     SetConsoleCursorPosition(hOutput, tst);
     cout << "Sun Deposit: " << sun_deposit;
     tst.X = 30; tst.Y = 22;
     SetConsoleCursorPosition(hOutput, tst);
     cout << "Shop: ";//
-    cout << "a Sunflower b Pea Shooter ";
+    cout << "a.Sunflower 10 ";
+    cout << " b.Pea Shooter " << shooter_sun_price_val;
+    cout<<" c.Double Shooter "<< double_shooter_sun_price_val;
+    cout<<" d.Frozen Shooter "<< double_shooter_sun_price_val;
+    cout << " e.Nut " << defense_sun_price_val;
+    tst.X = 30; tst.Y = 23;
+    SetConsoleCursorPosition(hOutput, tst);
+    cout << "f.High Nut " << defense_sun_price_val + 10;
+    cout << " g.Squash " << bomb_sun_price_val;
+    cout << " h.Cherry Bomb " << bomb_sun_price_val + 10;
     tst.X = 0; tst.Y = 29;
     SetConsoleCursorPosition(hOutput, tst);//最后的输出提示
     //CloseHandle(hOutput);
@@ -116,20 +137,31 @@ bool GardenBoard::random_generate_zom()
         return false;
     srand((unsigned int)(time(NULL)));
     int row_ini = rand() % row_total;
-    for (int i = 0; i < 2*row_total&& garden_pos[row_ini][col_total - 1]
-        && zombie_cnt[row_ini] >= zombie_max / 2 != NULL; ++i)
+    for (int i = 0; i < 2*row_total&& garden_pos_cnt[row_ini][col_total - 1]<unit_max;
+        ++i)
         //避免一行集中太多僵尸
     {
             row_ini = rand() % row_total;
     }
-    if (garden_pos[row_ini][col_total - 1])
+    if (garden_pos_cnt[row_ini][col_total - 1]==unit_max)
         return false;
     else
     {
         //cout << row_ini << endl;
-        Zombie* zm = new Zombie(row_ini,7); 
-        garden_pos[zm->row][zm->col] = zm;
+        Zombie* zm = new Zombie(row_ini,col_total-1);  
+        //garden_pos[zm->row][zm->col] = zm;
+        garden_pos[zm->row].push_back(zm);
+        garden_pos_cnt[zm->row][zm->col]++;
         zombie_cnt[zm->row]++;
+        int val = rand() % 3;
+        //cout << val << " v";
+        if (val == 0)
+        {
+            Zombie* zm_more = new Zombie(row_ini, col_total - 1);
+            garden_pos[zm_more->row].push_back(zm_more);
+            garden_pos_cnt[zm_more->row][zm_more->col]++;
+            zombie_cnt[zm_more->row]++;
+        }//随机在一个地块出现两个僵尸
         //cout << "generate zombie\n";
     }
 }
@@ -137,6 +169,7 @@ void GardenBoard::refresh_state(HANDLE& hOutput, HANDLE& hIn, DWORD start)
 {
     DWORD res;
     INPUT_RECORD Rec;
+    
     while (1)//游戏主循环
     {
         generate_sun();
@@ -149,34 +182,46 @@ void GardenBoard::refresh_state(HANDLE& hOutput, HANDLE& hIn, DWORD start)
             break;
         }//在状态更新并显示完成后判断是否结束
         random_generate_zom();
+        turn++;
         print_garden();
         for (int i = 0; i < row_total; ++i)
         {
-            for (int j = 0; j < col_total; ++j)
+            //for (int j = 0; j < col_total; ++j)
+            for(auto ptr:garden_pos[i])
             {
-                if (!garden_pos[i][j]) continue;
-                Plant* plt = (Plant*)(garden_pos[i][j]);
-                Zombie* zom = (Zombie*)(garden_pos[i][j]);
-                if (plt->type == 'p' && plt->plant_name == "Shooter")
+                
+                //if (!garden_pos[i][j]) continue;
+                if (!ptr) continue;
+                Plant* plt = (Plant*)ptr;//(garden_pos[i][j]);
+                Zombie* zom = (Zombie*)ptr;//(garden_pos[i][j]);
+                if (plt->type == 'p' && plt->func_type == "Shooter")
                 {
                     Shooter* shot = (Shooter*)plt;
-                    for (int k = j + 1; k < col_total; ++k)
+                    //for (int k = j + 1; k < col_total; ++k)
+                    for (auto nptr : garden_pos[i])
                     {
-                        //该行有检测到僵尸就发射子弹
-                        if (garden_pos[i][k] && ((Zombie*)(garden_pos[i][k]))->type == 'z')
+                        //该行有检测到僵尸且僵尸在植物右侧就发射子弹
+                        //if (garden_pos[i][k] && ((Zombie*)(garden_pos[i][k]))->type == 'z')
+                        if (nptr != ptr && nptr != NULL)
                         {
-                            //((Shooter*)plt)->attacking((Zombie*)(garden.garden_pos[i][k]));
+                            if (((Zombie*)nptr)->type != 'z' || ((Zombie*)nptr)->col < shot->col) 
+                                continue;
+                            //((Shooter*)plt)->attacking((Zombie*)(garden.garden_pos[i][k]));                                                   
                             shot->attacking();
+                            //子弹
                             for (vector<Bullet*>::iterator it = shot->bullet_set.begin(); it != shot->bullet_set.end();)
                             {
                                 if ((*it)->col > Y_MAX)
                                 {
                                     it = shot->bullet_set.erase(it);
                                 }//清除飞出界外的子弹
-                                else if ((*it)->col- 1 == ((Zombie*)(garden_pos[i][k]))->col
-                                    || (*it)->col == ((Zombie*)(garden_pos[i][k]))->col)
+                                else if ((*it)->col - 1 == ((Zombie*)nptr)->col
+                                    || (*it)->col == ((Zombie*)nptr)->col)
+                                    //(garden_pos[i][k])
                                 {
-                                    (*it)->attacking((Zombie*)(garden_pos[i][k]));
+                                    (*it)->attacking((Zombie*)nptr);
+                                    if (shot->plant_name == "Frozen Shooter")
+                                        ((Zombie*)nptr)->reset_speed(10);
                                     // output = { 31,24 };
                                     //SetConsoleCursorPosition(hOutput, output);
                                     //cout << "Shooter attacked! ";
@@ -190,84 +235,116 @@ void GardenBoard::refresh_state(HANDLE& hOutput, HANDLE& hIn, DWORD start)
                         }
                     }
                 }
+                if (plt->type == 'p' && plt->func_type == "Bomb")
+                {
+                    if (plt->plant_name == "Squash")
+                        ((Squash*)plt)->attacking(this->garden_pos);
+                    else if (plt->plant_name == "Cherry Bomb")
+                        ((Cherry_Bomb*)plt)->attacking(this->garden_pos);
+                }
                 if (zom->type == 'z')
                 {
-                    if (garden_pos[zom->row][zom->col - 1])
+                    if (garden_pos_cnt[zom->row][zom->col]!=0)
+                        //(garden_pos[zom->row][zom->col - 1])
                     {
-                        Plant* plt = (Plant*)(garden_pos[zom->row][zom->col - 1]);
-                        if (plt->type == 'p')
+                        for (auto ptr : garden_pos[zom->row])
                         {
-                            plt->get_hurt(zom);
-                           // COORD output = { 32,24 };
-                            //SetConsoleCursorPosition(hOutput, output);
-                            //cout << "Zombie attacked! ";
+                            if (!ptr)
+                                continue;
+                            Plant* plt = (Plant*)ptr;
+                                //(Plant*)(garden_pos[zom->row][zom->col - 1]);
+                            //if (plt->type == 'p')
+                            if( plt->type == 'p' && plt->col == zom->col - 1)
+                            {
+                                plt->get_hurt(zom);
+                                // COORD output = { 32,24 };
+                                 //SetConsoleCursorPosition(hOutput, output);
+                                 //cout << "Zombie attacked! ";
+                            }
                         }
+                        
                     }
                 }
             }
         }//植物和僵尸互相攻击，基于花园提供的位置信息来调用攻击的函数
 
+        //植物和僵尸的状态更新
+        
         for (int i = 0; i < row_total; ++i)
         {
-            for (int j = 0; j < col_total; ++j)
+            map<pair<int, int>, int> bullet_adjust;
+            for (vector<void*>::iterator it = garden_pos[i].begin(); it != garden_pos[i].end();)
             {
-                if (!garden_pos[i][j]) continue;
-                if (((Plant*)garden_pos[i][j])->type == 'p')
+                if ((*it) != NULL && ((Plant*)(*it))->type == 'p')//植物更新
                 {
-
-                    if (((Plant*)garden_pos[i][j])->life <= 0)
+                    if (((Plant*)(*it))->life <= 0)
+                        it = garden_pos[i].erase(it);//清除死亡的植物
+                    else if (((Shooter*)(*it))->func_type == "Shooter")//更新子弹位置
                     {
-                        delete garden_pos[i][j];
-                        //cout << "Plant died";
-                        garden_pos[i][j] = NULL;
-                    }//清除死亡的植物
-                    else if (((Shooter*)garden_pos[i][j])->plant_name == "Shooter")
-                        //子弹的更新
-                    {
-                        Shooter* shot = ((Shooter*)garden_pos[i][j]);
-                        for (vector<Bullet*>::iterator it = shot->bullet_set.begin(); it != shot->bullet_set.end();)
+                        Shooter* shot = ((Shooter*)(*it));
+                        for (vector<Bullet*>::iterator iter = shot->bullet_set.begin(); iter != shot->bullet_set.end();)
                         {
-                            if ((*it)->col>= Y_MAX)
+                            if ((*iter)->col >= Y_MAX)
                             {
-                                it = shot->bullet_set.erase(it);
+                                iter = shot->bullet_set.erase(iter);
                             }//清除已经飞出界外的子弹
                             else
                             {
-
-                                (*it)->move(garden_pos);
-                                (*it)->print_bullet(hOutput);
-                                it++;
+                                if (bullet_adjust.count(make_pair((*iter)->row, (*iter)->col)) == 0)
+                                    bullet_adjust[make_pair((*iter)->row, (*iter)->col)] = 1;
+                                else
+                                    bullet_adjust[make_pair((*iter)->row, (*iter)->col)]++;
+                                (*iter)->move(garden_pos);
+                                (*iter)->print_bullet(hOutput, bullet_adjust[make_pair((*iter)->row, (*iter)->col)]);
+                                iter++;
                             }//自动移动并且打印
                         }
+                        it++;
                     }
+                    else
+                        it++;
                 }
-                else if (((Zombie*)garden_pos[i][j])->type == 'z')
+                else if ((*it) != NULL && ((Zombie*)(*it))->type == 'z')//僵尸更新
                 {
-                    Zombie* zom = ((Zombie*)garden_pos[i][j]);
-                    if (zom->life <= 0)
+                    if (((Zombie*)(*it))->life <= 0)
                     {
                         get_score(10);//之后可以设置成不同的分数值
                         zombie_counting(-1, i);
-                        delete garden_pos[i][j];
-                        COORD output = { 7+15*(j),3+7*i };
+                        COORD output = { 7 + 15 * ((Zombie*)(*it))->col,3 + 7 * i };
                         if (output.X <= 119)
                         {
                             SetConsoleCursorPosition(hOutput, output);
                             cout << "Zombie died!";
                         }
-                        garden_pos[i][j] = NULL;
+                        it = garden_pos[i].erase(it);//清除死亡的僵尸
+                        
                     }//清除死亡的僵尸并且计分/更新僵尸数 
                     else
                     {
-                        //COORD output = { 7 + 15 * j,3 + 7 * i+1 };
-                        //SetConsoleCursorPosition(hOutput, output);
-                        //cout << "life: "<<zom->life;
-                        zom->move(garden_pos, i, j);
-                    }
+                        bool blocked = false;
+                        for (auto ptr : garden_pos[i])
+                        {
+                            if (ptr != NULL && ptr!= (*it))
+                            {
+                                if (((Plant*)ptr)->col == ((Zombie*)(*it))->col - 1 && ((Plant*)ptr)->type == 'p')
+                                {
+                                    blocked = true;
+                                    break;
+                                }
+                            }
+                        }
+                        if(!blocked)
+                            ((Zombie*)(*it))->move(garden_pos_cnt, i, ((Zombie*)(*it))->col);
+                        it++;
+                    }//僵尸移动
                 }
+                else 
+                {
+                    it++;
+                }
+              
             }
         }
-        
         ReadConsoleInput(hIn, &Rec, 1, &res);
         if (Rec.EventType == KEY_EVENT && Rec.Event.KeyEvent.bKeyDown&&
             Rec.Event.KeyEvent.uChar.AsciiChar == 'b' || Rec.Event.KeyEvent.uChar.AsciiChar == 'B')
@@ -296,7 +373,7 @@ void GardenBoard::open_shop(HANDLE& hIn)
                 //display.Y++;
                 //SetConsoleCursorPosition(hOutput,display);
                 char choice = 0;
-                vector<char> shop_list{ 'a','b' };
+                vector<char> shop_list{ 'a','b','c','d' ,'e','f','g','h'};
                 while (1)
                 {
                     ReadConsoleInput(hIn, &Rec, 1, &res);
@@ -344,7 +421,9 @@ void GardenBoard::open_shop(HANDLE& hIn)
                                 Sunflower* sunflower = new Sunflower(row, col);
                                 if (sun_deposit > sunflower->sun_price)
                                 {
-                                    garden_pos[row][col] = sunflower;
+                                    //garden_pos[row][col] = sunflower;
+                                    garden_pos[row].push_back(sunflower);
+                                    garden_pos_cnt[row][col]++;
                                     cout << "Sunflower!\n";
                                     sunflower_cnt++;
                                     sun_deposit -= sunflower->sun_price;
@@ -361,7 +440,9 @@ void GardenBoard::open_shop(HANDLE& hIn)
                                 Shooter* shot = new Shooter(row, col);
                                 if (sun_deposit > shot->sun_price)
                                 {
-                                    garden_pos[row][col] = shot;
+                                    //garden_pos[row][col] = shot;
+                                    garden_pos[row].push_back(shot);
+                                    garden_pos_cnt[row][col]++;
                                     cout << "Pea Shooter!\n";
                                     sun_deposit -= shot->sun_price;
                                 }
@@ -369,6 +450,114 @@ void GardenBoard::open_shop(HANDLE& hIn)
                                 {
                                     cout << "You are so poor!\n";
                                     delete shot;
+                                }
+                                break;
+                            }
+                            case 'c':
+                            {
+                                Double_Shooter* dshot = new Double_Shooter(row,col);
+                                if (sun_deposit > dshot->sun_price)
+                                {
+                                    //garden_pos[row][col] = shot;
+                                    garden_pos[row].push_back(dshot);
+                                    garden_pos_cnt[row][col]++;
+                                    cout << "Double Shooter!\n";
+                                    sun_deposit -= dshot->sun_price;
+                                }
+                                else
+                                {
+                                    cout << "You are so poor!\n";
+                                    delete dshot;
+                                }
+                                break;
+                            }
+                            case 'd':
+                            {
+                                Frozen_Shooter* dshot = new Frozen_Shooter(row, col);
+                                if (sun_deposit > dshot->sun_price)
+                                {
+                                    //garden_pos[row][col] = shot;
+                                    garden_pos[row].push_back(dshot);
+                                    garden_pos_cnt[row][col]++;
+                                    cout << "Frozen Shooter!\n";
+                                    sun_deposit -= dshot->sun_price;
+                                }
+                                else
+                                {
+                                    cout << "You are so poor!\n";
+                                    delete dshot;
+                                }
+                                break;
+                            }
+                            case 'e':
+                            {
+                                Nut* nt = new Nut(row, col);
+                                if (sun_deposit > nt->sun_price)
+                                {
+                                    //garden_pos[row][col] = shot;
+                                    garden_pos[row].push_back(nt);
+                                    garden_pos_cnt[row][col]++;
+                                    cout << "Nut!\n";
+                                    sun_deposit -= nt->sun_price;
+                                }
+                                else
+                                {
+                                    cout << "You are so poor!\n";
+                                    delete nt;
+                                }
+                                break;
+                            }
+                            case 'f':
+                            {
+                                High_Nut* nt = new High_Nut(row, col);
+                                if (sun_deposit > nt->sun_price)
+                                {
+                                    //garden_pos[row][col] = shot;
+                                    garden_pos[row].push_back(nt);
+                                    garden_pos_cnt[row][col]++;
+                                    cout << "High Nut!\n";
+                                    sun_deposit -= nt->sun_price;
+                                }
+                                else
+                                {
+                                    cout << "You are so poor!\n";
+                                    delete nt;
+                                }
+                                break;
+                            }
+                            case 'g':
+                            {
+                                Squash* nt = new Squash(row, col);
+                                if (sun_deposit > nt->sun_price)
+                                {
+                                    //garden_pos[row][col] = shot;
+                                    garden_pos[row].push_back(nt);
+                                    garden_pos_cnt[row][col]++;
+                                    cout << "Squash!\n";
+                                    sun_deposit -= nt->sun_price;
+                                }
+                                else
+                                {
+                                    cout << "You are so poor!\n";
+                                    delete nt;
+                                }
+                                break;
+                            }
+                            case 'h':
+                            {
+                                Cherry_Bomb* nt = new Cherry_Bomb(row, col);
+                                if (sun_deposit > nt->sun_price)
+                                {
+                                    //garden_pos[row][col] = shot;
+                                    garden_pos[row].push_back(nt);
+                                    garden_pos_cnt[row][col]++;
+                                    cout << "Cherry Bomb!\n";
+                                    sun_deposit -= nt->sun_price;
+                                }
+                                else
+                                {
+                                    cout << "You are so poor!\n";
+                                    delete nt;
                                 }
                                 break;
                             }

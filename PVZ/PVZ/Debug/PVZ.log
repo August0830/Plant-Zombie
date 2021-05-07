@@ -1,16 +1,16 @@
 ﻿  GardenBoard.cpp
-D:\191220083\Profess\ProgramingCpp\PVZ\PVZ\GardenBoard.cpp(16,21): warning C4838: 从“int”转换到“SHORT”需要收缩转换
-D:\191220083\Profess\ProgramingCpp\PVZ\PVZ\GardenBoard.cpp(16,24): warning C4838: 从“int”转换到“SHORT”需要收缩转换
-D:\191220083\Profess\ProgramingCpp\PVZ\PVZ\GardenBoard.cpp(252,43): warning C4838: 从“int”转换到“SHORT”需要收缩转换
-D:\191220083\Profess\ProgramingCpp\PVZ\PVZ\GardenBoard.cpp(252,52): warning C4838: 从“int”转换到“SHORT”需要收缩转换
+D:\191220083\Profess\ProgramingCpp\PVZ\PVZ\GardenBoard.cpp(17,21): warning C4838: 从“int”转换到“SHORT”需要收缩转换
+D:\191220083\Profess\ProgramingCpp\PVZ\PVZ\GardenBoard.cpp(17,24): warning C4838: 从“int”转换到“SHORT”需要收缩转换
+D:\191220083\Profess\ProgramingCpp\PVZ\PVZ\GardenBoard.cpp(313,44): warning C4838: 从“int”转换到“SHORT”需要收缩转换
+D:\191220083\Profess\ProgramingCpp\PVZ\PVZ\GardenBoard.cpp(313,75): warning C4838: 从“int”转换到“SHORT”需要收缩转换
   Plant.cpp
-D:\191220083\Profess\ProgramingCpp\PVZ\PVZ\Plant.cpp(29,28): warning C4838: 从“int”转换到“SHORT”需要收缩转换
-D:\191220083\Profess\ProgramingCpp\PVZ\PVZ\Plant.cpp(29,33): warning C4838: 从“int”转换到“SHORT”需要收缩转换
+D:\191220083\Profess\ProgramingCpp\PVZ\PVZ\Plant.cpp(47,28): warning C4838: 从“int”转换到“SHORT”需要收缩转换
+D:\191220083\Profess\ProgramingCpp\PVZ\PVZ\Plant.cpp(47,50): warning C4838: 从“int”转换到“SHORT”需要收缩转换
   Zombie.cpp
   demo_console.cpp
 D:\191220083\Profess\ProgramingCpp\PVZ\PVZ\demo_console.cpp(17,11): warning C4101: “mode”: 未引用的局部变量
   mouse_demo.cpp
 D:\191220083\Profess\ProgramingCpp\PVZ\PVZ\mouse_demo.cpp(15,11): warning C4101: “mode”: 未引用的局部变量
   正在生成代码...
-D:\191220083\Profess\ProgramingCpp\PVZ\PVZ\GardenBoard.cpp(135): warning C4715: “GardenBoard::random_generate_zom”: 不是所有的控件路径都返回值
+D:\191220083\Profess\ProgramingCpp\PVZ\PVZ\GardenBoard.cpp(167): warning C4715: “GardenBoard::random_generate_zom”: 不是所有的控件路径都返回值
   PVZ.vcxproj -> D:\191220083\Profess\ProgramingCpp\PVZ\Debug\PVZ.exe
