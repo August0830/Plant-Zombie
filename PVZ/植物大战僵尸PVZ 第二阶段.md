@@ -279,3 +279,8 @@ https://blog.csdn.net/bnb45/article/details/8042819
 
 > debug的时间比上一次长，主要卡在:对迭代器不是很熟练，没有达到预期的功能的效果所以重新构思了；代码规模变大，有一些分支调整的时候有疏漏；而且对新增的植物做功能支持的时候容易混乱，
 
+
+
+解决了商店调用的时候类似轮循的问题
+
+https://intfiction.org/t/windows-console-non-blocking-mode/43154/5

@@ -68,7 +68,7 @@ void GardenBoard::print_garden()
                 adjust_pos[make_pair(i, ((Plant*)plant)->col)] = 1;
             else
                 adjust_pos[make_pair(i, ((Plant*)plant)->col)]++;
-            tst.X = 4 + 15 * ((Plant*)plant)->col;
+            tst.X = 1 + 15 * ((Plant*)plant)->col;
             //tst.Y++;
             tst.Y = 7 * i + adjust_pos[make_pair(i, ((Plant*)plant)->col)];
             SetConsoleCursorPosition(hOutput, tst);
@@ -81,7 +81,7 @@ void GardenBoard::print_garden()
                 adjust_pos[make_pair(i, ((Zombie*)zombie)->col)] = 1;
             else
                 adjust_pos[make_pair(i, ((Zombie*)zombie)->col)]++;
-            tst.X = 7 + 15 * ((Zombie*)zombie)->col;
+            tst.X = 1 + 15 * ((Zombie*)zombie)->col;
             tst.Y = 7 * i + adjust_pos[make_pair(i, ((Zombie*)zombie)->col)];
             //tst.Y--;
             SetConsoleCursorPosition(hOutput, tst);
@@ -174,14 +174,14 @@ bool GardenBoard::random_generate_zom()
         else if (type_z % 7 == 4)
             zm = new Stone_Zombie(row_ini, col_total - 1);
         else
-            zm = new Stone_Zombie(row_ini,col_total-1);
+            zm = new Zombie_Normal(row_ini,col_total-1);
         //garden_pos[zm->row][zm->col] = zm;
         garden_pos[zm->row].push_back(zm);
         garden_pos_cnt[zm->row][zm->col]++;
         zombie_cnt[zm->row]++;
         int val = rand() % 5;
         //cout << val << " v";
-        if (val == 0)
+        /*if (val == 0)
         {
             Zombie* zm_more = new Zombie_Normal(row_ini, col_total - 1);
             garden_pos[zm_more->row].push_back(zm_more);
@@ -195,7 +195,7 @@ void GardenBoard::refresh_state(HANDLE& hOutput, HANDLE& hIn, DWORD start)
 {
     DWORD res;
     INPUT_RECORD Rec;
-    
+    int shop_turn=0;
     while (1)//游戏主循环
     {
         generate_sun();
@@ -290,7 +290,8 @@ void GardenBoard::refresh_state(HANDLE& hOutput, HANDLE& hIn, DWORD start)
                             //找到左侧的植物 
                             if (zom->zombie_name == "Stone Zombie" && plt->type == 'p')
                             {
-                                plt->get_hurt((Stone_Zombie*)zom);
+                                if(((Stone_Zombie*)zom)->stone>0)
+                                    plt->get_hurt((Stone_Zombie*)zom);
                             }
                             if( plt->type == 'p' && plt->col == zom->col - 1)//僵尸遇到了植物
                             {     
@@ -393,12 +394,22 @@ void GardenBoard::refresh_state(HANDLE& hOutput, HANDLE& hIn, DWORD start)
               
             }
         }
-        ReadConsoleInput(hIn, &Rec, 1, &res);
-        if (Rec.EventType == KEY_EVENT && Rec.Event.KeyEvent.bKeyDown &&
-            Rec.Event.KeyEvent.uChar.AsciiChar == 'b' || Rec.Event.KeyEvent.uChar.AsciiChar == 'B')
+        if (turn - shop_turn-1>1)
         {
-            open_shop(hIn);
-        }//改进：利用多线程来避免类似”轮循“的操作              
+            if (PeekConsoleInput(hIn, &Rec, 1, &res))
+            {
+                //cout << "peak";
+                if (Rec.EventType == KEY_EVENT && Rec.Event.KeyEvent.bKeyDown &&
+                    Rec.Event.KeyEvent.uChar.AsciiChar == 'b' || Rec.Event.KeyEvent.uChar.AsciiChar == 'B')
+                {
+                    open_shop(hIn);
+                    shop_turn  = turn;
+                }
+                FlushConsoleInputBuffer(hIn);
+            }
+            //ReadConsoleInput(hIn, &Rec, 1, &res);
+             
+        }                 
         while (GetTickCount() - start < 1000);
         start = GetTickCount();//页面暂停
         SetConsoleCursorPosition(hOutput, COORD{ 30,26 });

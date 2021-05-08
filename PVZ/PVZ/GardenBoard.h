@@ -370,7 +370,7 @@ public:
 		col = c;
 		life = z_normal_life * 3;
 		zombie_name = "Stone Zombie";
-		stone = 2;
+		stone = 1;
 	}
 	void print_Z() { cout << zombie_name << " " << life; }
 	int attacking();

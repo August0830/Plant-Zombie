@@ -12,6 +12,9 @@ int bullet_fly_speed = 1;
 int bomb_sun_price_val = 35;
 void Plant::get_hurt(Zombie* zombie)
 {
+	if (zombie->zombie_name == "Stone Zombie")
+		life -= ((Stone_Zombie*)zombie)->attacking();
+	else
 		life -= zombie->attacking();
 		//cout << "Plant life " << life<<endl;
 }
