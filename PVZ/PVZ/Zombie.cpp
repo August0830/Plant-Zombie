@@ -2,6 +2,8 @@
 #include "GardenBoard.h"
 extern bool GAME_FAIL;
 using namespace std;
+int z_normal_att = 5;
+int z_normal_life = 25;
 void Zombie::get_hurted(int attack_value)
 {
 	life -= attack_value;

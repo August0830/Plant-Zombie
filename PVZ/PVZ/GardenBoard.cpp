@@ -85,7 +85,9 @@ void GardenBoard::print_garden()
             tst.Y = 7 * i + adjust_pos[make_pair(i, ((Zombie*)zombie)->col)];
             //tst.Y--;
             SetConsoleCursorPosition(hOutput, tst);
-            cout << "Zombie "<<((Zombie*)zombie)->life;// << " " << ((Zombie*)zombie)->col << " " << ;
+            //cout << "Zombie "<<((Zombie*)zombie)->life;// << " " << ((Zombie*)zombie)->col << " " << ;
+            //cout << ((Zombie*)zombie)->zombie_name << " " << ((Zombie*)zombie)->life;
+            ((Zombie*)zombie)->print_Z();
         }
     }
 
@@ -148,7 +150,12 @@ bool GardenBoard::random_generate_zom()
     else
     {
         //cout << row_ini << endl;
-        Zombie* zm = new Zombie(row_ini,col_total-1);  
+        int type_z = rand();
+        Zombie* zm = NULL;
+        //if (type_z % 7 == 0)
+            //zm = new Conhead_Zombie(row_ini, col_total - 1);
+        //else
+        zm = new Zombie(row_ini,col_total-1);  
         //garden_pos[zm->row][zm->col] = zm;
         garden_pos[zm->row].push_back(zm);
         garden_pos_cnt[zm->row][zm->col]++;

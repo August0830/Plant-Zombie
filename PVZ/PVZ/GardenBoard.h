@@ -19,6 +19,8 @@ extern int turn;
 extern int defense_life_val;
 extern int defense_sun_price_val;
 extern int bomb_sun_price_val;
+extern int z_normal_att;
+extern int z_normal_life;
 using namespace std;
 class Zombie;
 class Plant;
@@ -200,7 +202,7 @@ public:
 	{
 		row = r;
 		col = c;
-		life = shooter_life_val;
+		life = shooter_life_val+15;
 		sun_price = defense_sun_price_val;
 		plant_name = "Nut";
 		func_type = "Defense";
@@ -262,30 +264,48 @@ class Zombie
 	friend class GardenBoard;
 	friend class Frozen_Bullet;
 private:
-	int life;//生命值
+
 	int attack;//攻击力
 	int speed;//移动速度 改为多少回合移动一格
-	//有多种僵尸之后再命名
-
+	//有多种僵尸之后再命名	
 public:
+	int life;//生命值
 	int row;
 	int col;
 	char type;
-	Zombie(int r, int c) :life(25), attack(5), speed(1), type('z')
+	string zombie_name;
+	Zombie() :row(0), col(0), type('z'), life(z_normal_life), speed(1), zombie_name("Zombie") {};
+	Zombie(int r, int c) :life(25), attack(5), speed(1), type('z'), zombie_name("Zombie")
 	{
 		row = r; col = c;
 	}
-	Zombie(int r, int c, int _life, int _att, int _speed) :type('z')
+	Zombie(int r, int c, int _life, int _att, int _speed) :type('z'), zombie_name("Zombie")
 	{
 		life = _life; attack = _att; speed = _speed; row = r; col = c;
 	}
 	void get_hurted(int attack_value);//便于之后增加其他带有攻击性的植物 所以只传入攻击值
 	bool move(vector<vector<int>>& garden_pos_cnt, int x0, int y0);//自行移动
-	int attacking()const
+	virtual int attacking()const
 	{
 		return attack;
 	}//获取攻击值
 	int get_row()const { return row; }
 	int get_col()const { return col; }//获取位置
 	void reset_speed(int new_val) { speed = new_val; }
+	virtual void print_Z() { cout << "Zombie " << life; };
+};
+class Conhead_Zombie:public Zombie
+{
+private:
+	int life;
+	string zombie_name;
+public:
+	Conhead_Zombie(int r, int c)
+	{
+		row = r;
+		col = c;
+		life = z_normal_life + 15;
+		zombie_name = "Conhead Zombie";
+		attack = 5;
+	}
 };
