@@ -87,7 +87,12 @@ void GardenBoard::print_garden()
             SetConsoleCursorPosition(hOutput, tst);
             //cout << "Zombie "<<((Zombie*)zombie)->life;// << " " << ((Zombie*)zombie)->col << " " << ;
             //cout << ((Zombie*)zombie)->zombie_name << " " << ((Zombie*)zombie)->life;
-            ((Zombie*)zombie)->print_Z();
+            if (((Zombie*)zombie)->zombie_name == "Zombie")
+                ((Zombie_Normal*)zombie)->print_Z();
+            else if (((Conhead_Zombie*)zombie)->zombie_name == "Conhead Zombie")
+                ((Conhead_Zombie*)zombie)->print_Z();
+            else
+                ((Zombie*)zombie)->print_Z();
         }
     }
 
@@ -155,16 +160,16 @@ bool GardenBoard::random_generate_zom()
         //if (type_z % 7 == 0)
             //zm = new Conhead_Zombie(row_ini, col_total - 1);
         //else
-        zm = new Zombie(row_ini,col_total-1);  
+        zm = new Zombie_Normal(row_ini,col_total-1);  
         //garden_pos[zm->row][zm->col] = zm;
         garden_pos[zm->row].push_back(zm);
         garden_pos_cnt[zm->row][zm->col]++;
         zombie_cnt[zm->row]++;
-        int val = rand() % 3;
+        //int val = rand() % 3;
         //cout << val << " v";
-        if (val == 0)
+        //if (val == 0)
         {
-            Zombie* zm_more = new Zombie(row_ini, col_total - 1);
+            Zombie* zm_more = new Conhead_Zombie(row_ini, col_total - 1);
             garden_pos[zm_more->row].push_back(zm_more);
             garden_pos_cnt[zm_more->row][zm_more->col]++;
             zombie_cnt[zm_more->row]++;
@@ -263,7 +268,12 @@ void GardenBoard::refresh_state(HANDLE& hOutput, HANDLE& hIn, DWORD start)
                             //if (plt->type == 'p')
                             if( plt->type == 'p' && plt->col == zom->col - 1)
                             {
-                                plt->get_hurt(zom);
+                                if (zom->zombie_name == "Zombie")
+                                {
+                                    plt->get_hurt((Zombie_Normal*)zom);
+                                }
+                                else
+                                    plt->get_hurt(zom);
                                 // COORD output = { 32,24 };
                                  //SetConsoleCursorPosition(hOutput, output);
                                  //cout << "Zombie attacked! ";

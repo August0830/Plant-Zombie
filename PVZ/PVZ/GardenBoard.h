@@ -263,10 +263,7 @@ class Zombie
 {
 	friend class GardenBoard;
 	friend class Frozen_Bullet;
-private:
-
-	int attack;//攻击力
-	int speed;//移动速度 改为多少回合移动一格
+//private:	
 	//有多种僵尸之后再命名	
 public:
 	int life;//生命值
@@ -274,12 +271,14 @@ public:
 	int col;
 	char type;
 	string zombie_name;
-	Zombie() :row(0), col(0), type('z'), life(z_normal_life), speed(1), zombie_name("Zombie") {};
-	Zombie(int r, int c) :life(25), attack(5), speed(1), type('z'), zombie_name("Zombie")
+	int attack;//攻击力
+	int speed;//移动速度 改为多少回合移动一格
+	Zombie() :row(0), col(0), type('z'), life(z_normal_life), speed(1), attack(z_normal_att),zombie_name("Z") {};
+	Zombie(int r, int c) :life(25), attack(z_normal_att), speed(1), type('z'), zombie_name("Z")
 	{
 		row = r; col = c;
 	}
-	Zombie(int r, int c, int _life, int _att, int _speed) :type('z'), zombie_name("Zombie")
+	Zombie(int r, int c, int _life, int _att, int _speed) :type('z'), zombie_name("Z")
 	{
 		life = _life; attack = _att; speed = _speed; row = r; col = c;
 	}
@@ -292,15 +291,24 @@ public:
 	int get_row()const { return row; }
 	int get_col()const { return col; }//获取位置
 	void reset_speed(int new_val) { speed = new_val; }
-	virtual void print_Z() { cout << "Zombie " << life; };
+	virtual void print_Z() { cout << zombie_name <<" "<< life; };
+};
+class Zombie_Normal :public Zombie
+{
+public:
+	Zombie_Normal(int r, int c)
+	{
+		row = r;
+		col = c;
+		zombie_name = "Zombie";
+		attack = z_normal_life;
+	}
+	void print_Z() { cout << zombie_name << " " << life; }
 };
 class Conhead_Zombie:public Zombie
 {
-private:
-	int life;
-	string zombie_name;
 public:
-	Conhead_Zombie(int r, int c)
+	Conhead_Zombie(int r, int c):
 	{
 		row = r;
 		col = c;
@@ -308,4 +316,5 @@ public:
 		zombie_name = "Conhead Zombie";
 		attack = 5;
 	}
+	void print_Z() { cout << zombie_name << " " << life; }
 };
