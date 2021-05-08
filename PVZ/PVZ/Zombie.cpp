@@ -80,3 +80,23 @@ void Jester_Zombie::self_attacking(vector<vector<void*>>& garden_pos)
         life = -1;
     }
 }
+void Pole_Zombie::jump(vector<vector<int>>& garden_pos_cnt)
+{
+    int new_col = col - 2;
+    if (new_col <= 0)
+        GAME_FAIL = true;
+    else
+    {
+        garden_pos_cnt[row][col]--;
+        garden_pos_cnt[row][new_col]++;
+        col = new_col;
+        pole = 0;
+    }
+}
+int Stone_Zombie::attacking()
+{
+    if (stone == 0)
+        attack = 1000;
+    stone--;
+    return attack;
+}

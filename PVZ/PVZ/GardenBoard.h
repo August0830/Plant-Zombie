@@ -154,7 +154,7 @@ class Bullet
 {
 	friend class Shooter;
 	friend class GardenBoard;
-private:
+private: 
 	int row;
 	int col;
 	int attack;//子弹的攻击值由植物（射手）决定
@@ -344,4 +344,34 @@ public:
 	}
 	void print_Z() { cout << zombie_name << " " << life; };
 	void self_attacking(vector<vector<void*>>& garden_pos);
+};
+class Pole_Zombie :public Zombie
+{
+public:
+	int pole;
+	Pole_Zombie(int r, int c)
+	{
+		row = r;
+		col = c;
+		life = z_normal_life * 2;
+		zombie_name = "Pole Zombie";
+		pole = 1;
+	}
+	void print_Z() { cout << zombie_name << " " << life; }
+	void jump(vector<vector<int>>& garden_pos_cnt);
+};
+class Stone_Zombie :public Zombie
+{
+public:
+	int stone;
+	Stone_Zombie(int r, int c)
+	{
+		row = r;
+		col = c;
+		life = z_normal_life * 3;
+		zombie_name = "Stone Zombie";
+		stone = 2;
+	}
+	void print_Z() { cout << zombie_name << " " << life; }
+	int attacking();
 };
