@@ -28,9 +28,9 @@ int main(int argc, char * argv[])
     Shooter* fshot = new Shooter(0, 1);
     garden.garden_pos[fshot->row][fshot->col]=fshot;
     Shooter* shot = new Shooter(1, 2);
-    shot = new Shooter(1, 2);
+    //shot = new Shooter(1, 2);
     garden.garden_pos[shot->row][shot->col]=shot;
-    shot = new Shooter(2, 3);
+    shot = new Shooter(2, 1);
     garden.garden_pos[shot->row][shot->col] = shot;
     garden.print_garden();
     getchar();

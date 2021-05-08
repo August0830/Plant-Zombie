@@ -2,11 +2,11 @@
 #include "GardenBoard.h"
 using namespace std;
 extern const int Y_MAX = 7;
-int shooter_attack_val = 9;
-int shooter_life_val = 25;
+int shooter_attack_val = 5;
+int shooter_life_val = 30;
 int shooter_sun_price_val = 10;
 int double_shooter_sun_price_val = 25;
-int defense_life_val = 40;
+int defense_life_val = 45;
 int defense_sun_price_val = 25;
 int bullet_fly_speed = 1;
 int bomb_sun_price_val = 35;

@@ -89,8 +89,14 @@ void GardenBoard::print_garden()
             //cout << ((Zombie*)zombie)->zombie_name << " " << ((Zombie*)zombie)->life;
             if (((Zombie*)zombie)->zombie_name == "Zombie")
                 ((Zombie_Normal*)zombie)->print_Z();
-            else if (((Conhead_Zombie*)zombie)->zombie_name == "Conhead Zombie")
+            else if (((Zombie*)zombie)->zombie_name == "Conhead Zombie")
                 ((Conhead_Zombie*)zombie)->print_Z();
+            else if (((Zombie*)zombie)->zombie_name == "Paper Zombie")
+            {
+                if(((Paper_Zombie*)zombie)->life<30)
+                    ((Paper_Zombie*)zombie)->change_state();
+                ((Paper_Zombie*)zombie)->print_Z();
+            }
             else
                 ((Zombie*)zombie)->print_Z();
         }
@@ -157,24 +163,28 @@ bool GardenBoard::random_generate_zom()
         //cout << row_ini << endl;
         int type_z = rand();
         Zombie* zm = NULL;
-        //if (type_z % 7 == 0)
-            //zm = new Conhead_Zombie(row_ini, col_total - 1);
-        //else
-        zm = new Zombie_Normal(row_ini,col_total-1);  
+        if (type_z % 7 == 0)
+            zm = new Conhead_Zombie(row_ini, col_total - 1);
+        else if (type_z % 7 == 1)
+            zm = new Paper_Zombie(row_ini, col_total - 1);
+        else if (type_z % 7 == 2)
+            zm = new Jester_Zombie(row_ini, col_total - 1);
+        else
+            zm = new Jester_Zombie(row_ini,col_total-1);
         //garden_pos[zm->row][zm->col] = zm;
         garden_pos[zm->row].push_back(zm);
         garden_pos_cnt[zm->row][zm->col]++;
         zombie_cnt[zm->row]++;
-        //int val = rand() % 3;
+        int val = rand() % 5;
         //cout << val << " v";
-        //if (val == 0)
+        if (val == 0)
         {
-            Zombie* zm_more = new Conhead_Zombie(row_ini, col_total - 1);
+            Zombie* zm_more = new Zombie_Normal(row_ini, col_total - 1);
             garden_pos[zm_more->row].push_back(zm_more);
             garden_pos_cnt[zm_more->row][zm_more->col]++;
             zombie_cnt[zm_more->row]++;
         }//随机在一个地块出现两个僵尸
-        //cout << "generate zombie\n";
+        //cout << "generate zombie\n";*/
     }
 }
 void GardenBoard::refresh_state(HANDLE& hOutput, HANDLE& hIn, DWORD start)
@@ -256,6 +266,8 @@ void GardenBoard::refresh_state(HANDLE& hOutput, HANDLE& hIn, DWORD start)
                 }
                 if (zom->type == 'z')
                 {
+                    if (zom->zombie_name == "Jester Zombie")
+                        ((Jester_Zombie*)zom)->self_attacking(garden_pos);
                     if (garden_pos_cnt[zom->row][zom->col]!=0)
                         //(garden_pos[zom->row][zom->col - 1])
                     {
@@ -267,13 +279,8 @@ void GardenBoard::refresh_state(HANDLE& hOutput, HANDLE& hIn, DWORD start)
                                 //(Plant*)(garden_pos[zom->row][zom->col - 1]);
                             //if (plt->type == 'p')
                             if( plt->type == 'p' && plt->col == zom->col - 1)
-                            {
-                                if (zom->zombie_name == "Zombie")
-                                {
-                                    plt->get_hurt((Zombie_Normal*)zom);
-                                }
-                                else
-                                    plt->get_hurt(zom);
+                            {                             
+                                plt->get_hurt(zom);
                                 // COORD output = { 32,24 };
                                  //SetConsoleCursorPosition(hOutput, output);
                                  //cout << "Zombie attacked! ";

@@ -46,57 +46,13 @@ git reset --hard 689656ec
 
 僵尸类统一的属性有生命值、攻击值和速度。与植物不同，僵尸有移动的功能，所以每一轮刷新时都要与花园进行位置更新的信息交互。同时僵尸遇到植物时会被阻塞而不再移动
 
+之前没有统一的父类 设置统一父类之后利用继承而来的变量来区分强制类型转换指针成何种情况；
+
 ### 核心类的设计展示
 
 #### 花园
 
-```cc
-class GardenBoard
-{
-	friend class Plant;
-	friend class Zombie;
-	friend class Shooter;
-	friend class Bullet;
-    //花园承担了与所有对象交互的功能，需要频繁访问他们的数据，因此设置成友元有助于提高程序运行效率
-private:
-	int row_total;//3 0~2
-	int col_total;//8 0~7
-	int sun_deposit;//拥有的太阳数 暂时公开
-	int point_cnt;//计分 
-	vector<int> zombie_cnt;//现有僵尸总数  根据每一行来记录
-	int zombie_max;//限定僵尸总数 可以根据游戏的难度来调整
-	int sunflower_cnt;//向日葵数量统计，阳光生成速率与之成正比
-public:
-	//int sunflower_cnt;
-	//int sun_deposit;
-	HANDLE hOutput;
-	HANDLE hIn;
-	vector<vector<void*>> garden_pos;
-	GardenBoard(int row_total, int col_total,HANDLE hIn,HANDLE hOutput) :point_cnt(0), sun_deposit(100),zombie_max(4),
-		sunflower_cnt(0)
-	{
-		for (int i = 0; i < row_total; ++i)
-		{
-			vector<void*> tmp(col_total);
-			garden_pos.push_back(tmp);
-		}//此处填满了NULL指针
-		zombie_cnt.resize(row_total, 0);
-		this->row_total = row_total;
-		this->col_total = col_total;
-		this->hIn = hIn;
-		this->hOutput = hOutput;
-	};
-	void print_garden();//打印面板 
-	void SetPos(HANDLE HOutput,int x, int y);
-	bool ClearConsole(HANDLE hOut);//refresh
-	void refresh_state(HANDLE& hOutput, HANDLE& hIn, DWORD start);//刷新位置 让植物和僵尸互相攻击 位置判断在花园中完成 消除死去的植物和僵尸并且对僵尸计分
-	void generate_sun();//refresh时更新太阳数，一开始按一定数目递增 增加向日葵后与向日葵数成正比
-	void get_score(int score) { point_cnt += score; }//更新记分牌
-	void zombie_counting(int cnt,int row){ zombie_cnt[row] += cnt; }//统计现有僵尸数
-	bool random_generate_zom();//生成僵尸 生成僵尸 可以根据总的僵尸数和每行的僵尸数调整
-	void open_shop(HANDLE& hIn);//在捕获相应键盘之后 购买植物 这里的位置与row/col_total保持一致 是格子数的意思
-};
-```
+
 
 #### 植物
 

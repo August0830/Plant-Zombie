@@ -21,6 +21,7 @@ extern int defense_sun_price_val;
 extern int bomb_sun_price_val;
 extern int z_normal_att;
 extern int z_normal_life;
+extern int z_normal_speed;
 using namespace std;
 class Zombie;
 class Plant;
@@ -273,7 +274,7 @@ public:
 	string zombie_name;
 	int attack;//攻击力
 	int speed;//移动速度 改为多少回合移动一格
-	Zombie() :row(0), col(0), type('z'), life(z_normal_life), speed(1), attack(z_normal_att),zombie_name("Z") {};
+	Zombie() :row(0), col(0), type('z'), life(z_normal_life), speed(z_normal_speed), attack(z_normal_att),zombie_name("Z") {};
 	Zombie(int r, int c) :life(25), attack(z_normal_att), speed(1), type('z'), zombie_name("Z")
 	{
 		row = r; col = c;
@@ -308,7 +309,7 @@ public:
 class Conhead_Zombie:public Zombie
 {
 public:
-	Conhead_Zombie(int r, int c):
+	Conhead_Zombie(int r, int c)
 	{
 		row = r;
 		col = c;
@@ -317,4 +318,30 @@ public:
 		attack = 5;
 	}
 	void print_Z() { cout << zombie_name << " " << life; }
+};
+class Paper_Zombie :public Zombie
+{
+public:
+	Paper_Zombie(int r, int c)
+	{
+		row = r;
+		col = c;
+		life = z_normal_life + 15;
+		zombie_name = "Paper Zombie";
+	}
+	void print_Z();
+	void change_state();
+};
+class Jester_Zombie :public Zombie
+{
+public:
+	Jester_Zombie(int r, int c)
+	{
+		row = r;
+		col = c;
+		life = z_normal_life*4;
+		zombie_name = "Jester Zombie";
+	}
+	void print_Z() { cout << zombie_name << " " << life; };
+	void self_attacking(vector<vector<void*>>& garden_pos);
 };
